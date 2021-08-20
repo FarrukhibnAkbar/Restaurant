@@ -1,69 +1,30 @@
+-- Nechta osh zakaz qilingani
 
-insert into categories(name) values ('Milliy taomlar'), 
-									('Yevropa taomlari'), 
-									('Turk taomlari');
-
-
-insert into types(name) values ('Quyuq ovqatlar'), 
-						 	   ('Suyuq ovqotlar'), 
-						 	   ('Ichimliklar'), 
-						 	   ('Shirinliklar'), 
-						 	   ('Salatlar');
-
-
-insert into type_register(category_id,type_id) values (1, 1), (1, 2), (1, 3), (1, 5);
-insert into type_register(category_id,type_id) values (2, 4);
-insert into type_register(category_id, type_id) values(3, 3), (3, 4);
+select
+  p.name,
+  sum(od.quantity)
+from orders as o
+join products as p on p.product_id = 1
+join order_details as od on (select o.created_at::timestamp::date) = (select '2021-08-09')::date and od.order_id = o.order_id and od.product_id = p.product_id
+group by p.name
+;
 
 
-insert into tables(number) values(1), (2), (3), (4), (5), (6), (7), (8)
+select
+	p.name,
+	count(order_id)
+from order_details
+natural join products as p
+group by p.name
+;
 
-
-insert into components(name) values('Guruch'), ('Sabzi'), ('Go''sht'), 
-('Kartoshka'), ('Piyoz'), ('Karam');
-
-
-insert into products(name, price, type_register_id) values('Osh', 20000, 4), 
-('Qozon kabob', 40000, 4), ('Turk salat', 15000, 3);
-
-
-insert into ingredients(product_id, companent_id, weight) values(1, 1, 1000), 
-(1, 2, 1000), (1, 3, 1000), (1, 5, 100);
-insert into ingredients(product_id, companent_id, weight) values(2, 3, 1200),
-(2, 4, 600), (2, 5, 150);
-insert into ingredients(product_id, companent_id, weight) values(3, 6, 200), 
-(3, 5, 100), (3, 3, 150);
-
-
-insert into orders(table_id, closed_at) values(1, '2021-08-06 11:00'::timestamp);
-insert into orders(table_id, closed_at) values(2, '2021-08-06 11:30'::timestamp);
-insert into orders(table_id, closed_at) values(3, '2021-08-06 15:00'::timestamp);
-insert into orders(table_id, closed_at) values(4, '2021-08-06 12:00'::timestamp);
-insert into orders(table_id, closed_at) values(5, '2021-08-06 09:00'::timestamp);
-insert into orders(table_id, closed_at) values(6, '2021-08-06 16:00'::timestamp);
-insert into orders(table_id, closed_at) values(7, '2021-08-06 13:00'::timestamp);
-insert into orders(table_id, closed_at) values(8, '2021-08-06 13:30'::timestamp);
-
-
-insert into order_details(quantity, order_id, product_id) values(2, 1, 1);
-insert into order_details(quantity, order_id, product_id) values(2, 1, 1);
-
-
-
-
-
-
-select                     
-	group by p.name        
-	group by companent_id  
-from                          
-	ingredients as i        
-natural join products as p 
-where                      
-	i.ingredient_id = 1    
-;	                       
-
-
+select
+	
+from
+	types
+natural join products as p
+natural join order_details as o
+;
 
 select
 	t.name
@@ -73,4 +34,75 @@ natural join types as t
 where
 	r.category_id = 1
 ;
+
+--eng ko'p taom sotilgan vaqt
+
+select
+	*
+from
+	orders
+;
+
+-------------------------------------------
+
+
+create function fn(x decimal(16, 2)) returns varchar language plpgsql as
+$$
+
+	declare
+		i int;
+		store record;
+
+	begin
+
+		for i in select p.product_id from products as p loop
+			if x > select p.price from products as p where p.product_id = i then
+				select
+				 	p.name into store,
+				 	(x - p.price) into x
+				from products as p
+				where p.product_id = i;
+
+			end if;
+
+			raise info '%', store;
+		end loop;
+	end;
+$$;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
